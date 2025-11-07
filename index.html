@@ -1,376 +1,722 @@
-import React, { useState } from 'react';
-import { Train, Car, MapPin, IndianRupee, Clock, Navigation, AlertCircle } from 'lucide-react';
-
-const DelhiTripPlanner = () => {
-  const [selectedRoute, setSelectedRoute] = useState(null);
-
-  const routes = [
-    {
-      from: "START → Chandni Chowk",
-      to: "Chandni Chowk",
-      distance: "Varies by location",
-      metro: { time: "Varies", cost: "₹20-60", details: "Take Yellow Line to Chandni Chowk Station" },
-      taxi: { time: "Varies", cost: "₹150-500", details: "Depends on starting point" },
-      recommended: "Metro",
-      visit: "7:30 AM - 9:30 AM (2 hours)"
-    },
-    {
-      from: "Chandni Chowk",
-      to: "Red Fort",
-      distance: "1 km",
-      metro: { time: "5 min", cost: "₹10", details: "Take Violet Line from Chandni Chowk to Lal Qila OR walk 10-15 mins" },
-      taxi: { time: "5 min", cost: "₹30-50", details: "Auto/e-rickshaw" },
-      walk: { time: "10-15 min", cost: "Free" },
-      recommended: "Walk",
-      visit: "9:30 AM - 11:00 AM (1.5 hours)"
-    },
-    {
-      from: "Red Fort",
-      to: "India Gate",
-      distance: "8 km",
-      metro: { time: "30-40 min", cost: "₹20-30", details: "Lal Qila → Kashmere Gate → Central Secretariat (Yellow Line), then walk 15 min" },
-      taxi: { time: "20-30 min", cost: "₹150-200", details: "Direct via Ola/Uber - saves time!" },
-      recommended: "Taxi (saves time)",
-      visit: "11:45 AM - 1:00 PM (1.25 hours + lunch)"
-    },
-    {
-      from: "India Gate",
-      to: "Humayun's Tomb",
-      distance: "6 km",
-      metro: { time: "45-60 min", cost: "₹20-30", details: "Walk to Central Secretariat → Violet Line to JLN Stadium, then auto ₹50-80" },
-      taxi: { time: "15-20 min", cost: "₹100-150", details: "Direct via Ola/Uber - HIGHLY recommended" },
-      recommended: "Taxi (saves 30+ min)",
-      visit: "2:00 PM - 3:30 PM (1.5 hours)"
-    },
-    {
-      from: "Humayun's Tomb",
-      to: "Qutub Minar",
-      distance: "14 km",
-      metro: { time: "60-75 min", cost: "₹30-40", details: "JLN Stadium → Central Secretariat → Qutab Minar (Yellow Line)" },
-      taxi: { time: "35-45 min", cost: "₹250-350", details: "Direct via Ola/Uber" },
-      recommended: "Metro (cost-effective)",
-      visit: "4:30 PM - 6:30 PM (2 hours)"
-    },
-    {
-      from: "Qutub Minar",
-      to: "Waste to Wonder Park",
-      distance: "35 km",
-      metro: { time: "90-120 min", cost: "₹50-60", details: "Qutab Minar → Rajiv Chowk → Noida Sector 62 (Yellow+Blue Line)" },
-      taxi: { time: "60-75 min", cost: "₹500-700", details: "Very expensive, not recommended" },
-      recommended: "Skip for 1-day trip",
-      visit: "NOT POSSIBLE in 1-day trip",
-      warning: true
-    }
-  ];
-
-  const costSummary = {
-    metroOnly: {
-      travel: "₹100-170",
-      entry: "₹95",
-      food: "₹300-500",
-      total: "₹495-765"
-    },
-    recommended: {
-      travel: "₹350-500 (Metro + 2 taxis)",
-      entry: "₹95",
-      food: "₹300-500",
-      total: "₹745-1095"
-    },
-    allTaxi: {
-      travel: "₹1000-1400",
-      entry: "₹95",
-      food: "₹300-500",
-      total: "₹1395-1995"
-    }
-  };
-
-  const entryFees = [
-    { place: "Chandni Chowk", fee: "Free" },
-    { place: "Red Fort", fee: "₹35" },
-    { place: "India Gate", fee: "Free" },
-    { place: "Humayun's Tomb", fee: "₹30 (Free on Friday!)" },
-    { place: "Qutub Minar", fee: "₹30" }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl shadow-xl p-6 mb-6">
-          <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-            <Navigation size={32} />
-            Delhi One-Day Trip: Complete Travel Guide
-          </h1>
-          <p className="text-orange-100">Distance, Fare & Cost breakdown for all routes</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delhi One-Day Trip Planner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #dbeafe 0%, #ffffff 50%, #fed7aa 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, #f97316 0%, #dc2626 100%);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .header p {
+            color: #fed7aa;
+        }
+        
+        .start-section {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .start-header {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .start-icon {
+            background: #22c55e;
+            color: white;
+            border-radius: 50%;
+            padding: 1rem;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .start-section h2 {
+            color: #166534;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .start-section ul {
+            list-style: none;
+            margin: 1rem 0;
+        }
+        
+        .start-section li {
+            margin: 0.5rem 0;
+            color: #374151;
+        }
+        
+        .pro-tip {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #22c55e;
+            margin-top: 1rem;
+        }
+        
+        .routes-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .route-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .route-card:hover {
+            border-color: #3b82f6;
+        }
+        
+        .route-card.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .route-card.warning {
+            border-color: #fca5a5;
+            background: #fef2f2;
+        }
+        
+        .route-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .route-info {
+            flex: 1;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .badge-step {
+            background: #f97316;
+            color: white;
+        }
+        
+        .badge-warning {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .badge-recommended {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .route-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin: 0.5rem 0;
+        }
+        
+        .route-distance {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .visit-time {
+            font-size: 0.875rem;
+            color: #9333ea;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+        
+        .travel-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .travel-option {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        
+        .travel-option.recommended-metro {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+        }
+        
+        .travel-option.recommended-taxi {
+            background: #dcfce7;
+            border: 2px solid #22c55e;
+        }
+        
+        .travel-option.recommended-walk {
+            background: #f3e8ff;
+            border: 2px solid #a855f7;
+        }
+        
+        .option-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .option-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+            margin: 0.25rem 0;
+        }
+        
+        .option-details-text {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .warning-box {
+            background: #fee2e2;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #ef4444;
+            margin-top: 1rem;
+            color: #991b1b;
+            font-size: 0.875rem;
+        }
+        
+        .cost-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cost-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+        
+        .cost-card.budget { border-top: 4px solid #3b82f6; }
+        .cost-card.recommended { border-top: 4px solid #22c55e; }
+        .cost-card.comfort { border-top: 4px solid #f97316; }
+        
+        .cost-card h3 {
+            font-size: 1.125rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            margin: 0.5rem 0;
+        }
+        
+        .cost-total {
+            border-top: 2px solid #e5e7eb;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: bold;
+        }
+        
+        .cost-note {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 1rem;
+        }
+        
+        .entry-fees {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead tr {
+            background: #f9fafb;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+        }
+        
+        th:last-child, td:last-child {
+            text-align: right;
+        }
+        
+        tbody tr {
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .total-row {
+            background: #f0fdf4;
+            border-top: 2px solid #22c55e;
+            font-weight: bold;
+        }
+        
+        .fee-amount {
+            color: #16a34a;
+            font-weight: 600;
+        }
+        
+        .final-recommendation {
+            background: linear-gradient(90deg, #a855f7 0%, #ec4899 100%);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .final-recommendation h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .recommendation-item {
+            font-size: 1.125rem;
+            margin: 0.75rem 0;
+        }
+        
+        .footer-note {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .travel-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .cost-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <i data-lucide="navigation"></i>
+                Delhi One-Day Trip: Complete Travel Guide
+            </h1>
+            <p>Distance, Fare & Cost breakdown for all routes</p>
         </div>
 
-        {/* Starting Point Recommendation */}
-        <div className="bg-green-50 border-2 border-green-500 rounded-xl p-6 mb-6">
-          <div className="flex items-start gap-4">
-            <div className="bg-green-500 text-white rounded-full p-3">
-              <MapPin size={24} />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-green-800 mb-2">🎯 START HERE: Chandni Chowk</h2>
-              <p className="text-gray-700 mb-2">
-                <strong>Why start at Chandni Chowk?</strong>
-              </p>
-              <ul className="space-y-1 text-gray-700">
-                <li>✓ Best to visit early morning (7:30 AM) before crowds</li>
-                <li>✓ Walking distance to Red Fort - no extra travel needed</li>
-                <li>✓ Famous breakfast spots (Paranthe Wali Gali)</li>
-                <li>✓ Located on Yellow Line - main metro line for your trip</li>
-                <li>✓ Logical starting point moving South → West Delhi</li>
-              </ul>
-              <div className="mt-3 p-3 bg-white rounded border-l-4 border-green-500">
-                <strong>Pro Tip:</strong> Reach Chandni Chowk by 7:30 AM via Yellow Line metro from anywhere in Delhi!
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Route-by-Route Table */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <Train className="text-blue-500" />
-            Route-by-Route Breakdown
-          </h2>
-          
-          <div className="space-y-4">
-            {routes.map((route, index) => (
-              <div 
-                key={index}
-                className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                  route.warning 
-                    ? 'border-red-300 bg-red-50' 
-                    : selectedRoute === index 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-200 hover:border-blue-300'
-                }`}
-                onClick={() => setSelectedRoute(selectedRoute === index ? null : index)}
-              >
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                        Step {index + 1}
-                      </span>
-                      {route.warning && (
-                        <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                          <AlertCircle size={14} /> NOT FEASIBLE
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-800">
-                      {route.from} → {route.to}
-                    </h3>
-                    <p className="text-sm text-gray-600">Distance: <strong>{route.distance}</strong></p>
-                    <p className="text-sm text-purple-600 font-semibold mt-1">Visit Time: {route.visit}</p>
-                  </div>
-                  
-                  <div className="text-right">
-                    <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">
-                      Best: {route.recommended}
-                    </div>
-                  </div>
+        <!-- Starting Point Recommendation -->
+        <div class="start-section">
+            <div class="start-header">
+                <div class="start-icon">
+                    <i data-lucide="map-pin"></i>
                 </div>
-
-                {/* Travel Options */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {route.metro && (
-                    <div className={`p-3 rounded-lg ${route.recommended === 'Metro' ? 'bg-blue-100 border-2 border-blue-500' : 'bg-gray-50'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Train size={16} className="text-blue-500" />
-                        <span className="font-bold text-gray-800">Metro</span>
-                      </div>
-                      <div className="text-sm space-y-1">
-                        <div className="flex items-center gap-1">
-                          <Clock size={12} />
-                          <span>{route.metro.time}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <IndianRupee size={12} />
-                          <span className="font-bold text-blue-600">{route.metro.cost}</span>
-                        </div>
-                        {selectedRoute === index && (
-                          <p className="text-xs text-gray-600 mt-2 pt-2 border-t">{route.metro.details}</p>
-                        )}
-                      </div>
+                <div>
+                    <h2>🎯 START HERE: Chandni Chowk</h2>
+                    <p style="color: #374151; font-weight: bold; margin-top: 0.5rem;">Why start at Chandni Chowk?</p>
+                    <ul>
+                        <li>✓ Best to visit early morning (7:30 AM) before crowds</li>
+                        <li>✓ Walking distance to Red Fort - no extra travel needed</li>
+                        <li>✓ Famous breakfast spots (Paranthe Wali Gali)</li>
+                        <li>✓ Located on Yellow Line - main metro line for your trip</li>
+                        <li>✓ Logical starting point moving South → West Delhi</li>
+                    </ul>
+                    <div class="pro-tip">
+                        <strong>Pro Tip:</strong> Reach Chandni Chowk by 7:30 AM via Yellow Line metro from anywhere in Delhi!
                     </div>
-                  )}
-
-                  {route.taxi && (
-                    <div className={`p-3 rounded-lg ${route.recommended === 'Taxi (saves time)' || route.recommended === 'Taxi (saves 30+ min)' ? 'bg-green-100 border-2 border-green-500' : 'bg-gray-50'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Car size={16} className="text-green-500" />
-                        <span className="font-bold text-gray-800">Taxi/Auto</span>
-                      </div>
-                      <div className="text-sm space-y-1">
-                        <div className="flex items-center gap-1">
-                          <Clock size={12} />
-                          <span>{route.taxi.time}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <IndianRupee size={12} />
-                          <span className="font-bold text-green-600">{route.taxi.cost}</span>
-                        </div>
-                        {selectedRoute === index && (
-                          <p className="text-xs text-gray-600 mt-2 pt-2 border-t">{route.taxi.details}</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {route.walk && (
-                    <div className={`p-3 rounded-lg ${route.recommended === 'Walk' ? 'bg-purple-100 border-2 border-purple-500' : 'bg-gray-50'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <MapPin size={16} className="text-purple-500" />
-                        <span className="font-bold text-gray-800">Walk</span>
-                      </div>
-                      <div className="text-sm space-y-1">
-                        <div className="flex items-center gap-1">
-                          <Clock size={12} />
-                          <span>{route.walk.time}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <IndianRupee size={12} />
-                          <span className="font-bold text-purple-600">{route.walk.cost}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
-
-                {route.warning && (
-                  <div className="mt-3 p-3 bg-red-100 border-l-4 border-red-500 rounded">
-                    <p className="text-sm text-red-800">
-                      <strong>⚠️ Warning:</strong> Waste to Wonder Park is 35 km away in Noida. Adding this will take 3-4 hours extra travel time, making a 1-day trip impossible. Consider visiting it on a separate day.
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+            </div>
         </div>
 
-        {/* Cost Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-blue-500">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">💰 Budget Option</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Travel (Metro only):</span>
-                <span className="font-bold">{costSummary.metroOnly.travel}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Entry Fees:</span>
-                <span className="font-bold">{costSummary.metroOnly.entry}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Food & Water:</span>
-                <span className="font-bold">{costSummary.metroOnly.food}</span>
-              </div>
-              <div className="border-t-2 pt-2 flex justify-between text-lg">
-                <span className="font-bold">Total:</span>
-                <span className="font-bold text-blue-600">{costSummary.metroOnly.total}</span>
-              </div>
-            </div>
-            <p className="text-xs text-gray-600 mt-3">Takes longer but most economical</p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-green-500">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">⭐ Recommended</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Travel (Mix):</span>
-                <span className="font-bold">{costSummary.recommended.travel}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Entry Fees:</span>
-                <span className="font-bold">{costSummary.recommended.entry}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Food & Water:</span>
-                <span className="font-bold">{costSummary.recommended.food}</span>
-              </div>
-              <div className="border-t-2 pt-2 flex justify-between text-lg">
-                <span className="font-bold">Total:</span>
-                <span className="font-bold text-green-600">{costSummary.recommended.total}</span>
-              </div>
-            </div>
-            <p className="text-xs text-gray-600 mt-3">Best balance of time & cost - taxi for 2 routes</p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-orange-500">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">🚗 Comfort Option</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Travel (All taxi):</span>
-                <span className="font-bold">{costSummary.allTaxi.travel}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Entry Fees:</span>
-                <span className="font-bold">{costSummary.allTaxi.entry}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Food & Water:</span>
-                <span className="font-bold">{costSummary.allTaxi.food}</span>
-              </div>
-              <div className="border-t-2 pt-2 flex justify-between text-lg">
-                <span className="font-bold">Total:</span>
-                <span className="font-bold text-orange-600">{costSummary.allTaxi.total}</span>
-              </div>
-            </div>
-            <p className="text-xs text-gray-600 mt-3">Fastest but most expensive</p>
-          </div>
+        <!-- Route-by-Route Breakdown -->
+        <div class="routes-section">
+            <h2 class="section-title">
+                <i data-lucide="train" style="color: #3b82f6;"></i>
+                Route-by-Route Breakdown
+            </h2>
+            <div id="routes-container"></div>
         </div>
 
-        {/* Entry Fees Table */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">🎫 Entry Fees Breakdown</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="p-3 text-left font-bold">Place</th>
-                  <th className="p-3 text-right font-bold">Entry Fee</th>
-                </tr>
-              </thead>
-              <tbody>
-                {entryFees.map((item, index) => (
-                  <tr key={index} className="border-t">
-                    <td className="p-3">{item.place}</td>
-                    <td className="p-3 text-right font-semibold text-green-600">{item.fee}</td>
-                  </tr>
-                ))}
-                <tr className="border-t-2 bg-green-50">
-                  <td className="p-3 font-bold">Total Entry Fees</td>
-                  <td className="p-3 text-right font-bold text-green-700">₹95 (₹65 on Friday!)</td>
-                </tr>
-              </tbody>
+        <!-- Cost Summary -->
+        <div class="cost-summary">
+            <div class="cost-card budget">
+                <h3>💰 Budget Option</h3>
+                <div class="cost-row">
+                    <span>Travel (Metro only):</span>
+                    <strong>₹100-170</strong>
+                </div>
+                <div class="cost-row">
+                    <span>Entry Fees:</span>
+                    <strong>₹95</strong>
+                </div>
+                <div class="cost-row">
+                    <span>Food & Water:</span>
+                    <strong>₹300-500</strong>
+                </div>
+                <div class="cost-row cost-total">
+                    <span>Total:</span>
+                    <span style="color: #3b82f6;">₹495-765</span>
+                </div>
+                <p class="cost-note">Takes longer but most economical</p>
+            </div>
+
+            <div class="cost-card recommended">
+                <h3>⭐ Recommended</h3>
+                <div class="cost-row">
+                    <span>Travel (Mix):</span>
+                    <strong>₹350-500</strong>
+                </div>
+                <div class="cost-row">
+                    <span>Entry Fees:</span>
+                    <strong>₹95</strong>
+                </div>
+                <div class="cost-row">
+                    <span>Food & Water:</span>
+                    <strong>₹300-500</strong>
+                </div>
+                <div class="cost-row cost-total">
+                    <span>Total:</span>
+                    <span style="color: #22c55e;">₹745-1095</span>
+                </div>
+                <p class="cost-note">Best balance of time & cost - taxi for 2 routes</p>
+            </div>
+
+            <div class="cost-card comfort">
+                <h3>🚗 Comfort Option</h3>
+                <div class="cost-row">
+                    <span>Travel (All taxi):</span>
+                    <strong>₹1000-1400</strong>
+                </div>
+                <div class="cost-row">
+                    <span>Entry Fees:</span>
+                    <strong>₹95</strong>
+                </div>
+                <div class="cost-row">
+                    <span>Food & Water:</span>
+                    <strong>₹300-500</strong>
+                </div>
+                <div class="cost-row cost-total">
+                    <span>Total:</span>
+                    <span style="color: #f97316;">₹1395-1995</span>
+                </div>
+                <p class="cost-note">Fastest but most expensive</p>
+            </div>
+        </div>
+
+        <!-- Entry Fees Table -->
+        <div class="entry-fees">
+            <h2 class="section-title">🎫 Entry Fees Breakdown</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Place</th>
+                        <th>Entry Fee</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Chandni Chowk</td>
+                        <td class="fee-amount">Free</td>
+                    </tr>
+                    <tr>
+                        <td>Red Fort</td>
+                        <td class="fee-amount">₹35</td>
+                    </tr>
+                    <tr>
+                        <td>India Gate</td>
+                        <td class="fee-amount">Free</td>
+                    </tr>
+                    <tr>
+                        <td>Humayun's Tomb</td>
+                        <td class="fee-amount">₹30 (Free on Friday!)</td>
+                    </tr>
+                    <tr>
+                        <td>Qutub Minar</td>
+                        <td class="fee-amount">₹30</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td>Total Entry Fees</td>
+                        <td style="color: #15803d;">₹95 (₹65 on Friday!)</td>
+                    </tr>
+                </tbody>
             </table>
-          </div>
         </div>
 
-        {/* Final Recommendations */}
-        <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl shadow-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">🎯 My Recommendation</h2>
-          <div className="space-y-3">
-            <p className="text-lg">✅ <strong>START:</strong> Chandni Chowk at 7:30 AM</p>
-            <p className="text-lg">✅ <strong>TRAVEL:</strong> Use Metro mostly + 2 taxis (Red Fort→India Gate & India Gate→Humayun's Tomb)</p>
-            <p className="text-lg">✅ <strong>SKIP:</strong> Waste to Wonder Park (too far - visit another day)</p>
-            <p className="text-lg">✅ <strong>BUDGET:</strong> ₹750-1100 total for everything</p>
-            <p className="text-lg">✅ <strong>TIME:</strong> 7:30 AM - 6:30 PM (11 hours)</p>
-            <p className="text-lg">✅ <strong>BONUS:</strong> Visit on Friday to save ₹30 at Humayun's Tomb!</p>
-          </div>
+        <!-- Final Recommendations -->
+        <div class="final-recommendation">
+            <h2>🎯 My Recommendation</h2>
+            <div class="recommendation-item">✅ <strong>START:</strong> Chandni Chowk at 7:30 AM</div>
+            <div class="recommendation-item">✅ <strong>TRAVEL:</strong> Use Metro mostly + 2 taxis (Red Fort→India Gate & India Gate→Humayun's Tomb)</div>
+            <div class="recommendation-item">✅ <strong>SKIP:</strong> Waste to Wonder Park (too far - visit another day)</div>
+            <div class="recommendation-item">✅ <strong>BUDGET:</strong> ₹750-1100 total for everything</div>
+            <div class="recommendation-item">✅ <strong>TIME:</strong> 7:30 AM - 6:30 PM (11 hours)</div>
+            <div class="recommendation-item">✅ <strong>BONUS:</strong> Visit on Friday to save ₹30 at Humayun's Tomb!</div>
         </div>
 
-        <div className="mt-4 text-center text-sm text-gray-600">
-          Click on any route above to see detailed travel instructions! 👆
+        <div class="footer-note">
+            Click on any route above to see detailed travel instructions! 👆
         </div>
-      </div>
     </div>
-  );
-};
 
-export default DelhiTripPlanner;
+    <script>
+        const routes = [
+            {
+                from: "START → Chandni Chowk",
+                to: "Chandni Chowk",
+                distance: "Varies by location",
+                metro: { time: "Varies", cost: "₹20-60", details: "Take Yellow Line to Chandni Chowk Station" },
+                taxi: { time: "Varies", cost: "₹150-500", details: "Depends on starting point" },
+                recommended: "Metro",
+                visit: "7:30 AM - 9:30 AM (2 hours)"
+            },
+            {
+                from: "Chandni Chowk",
+                to: "Red Fort",
+                distance: "1 km",
+                metro: { time: "5 min", cost: "₹10", details: "Take Violet Line from Chandni Chowk to Lal Qila OR walk 10-15 mins" },
+                taxi: { time: "5 min", cost: "₹30-50", details: "Auto/e-rickshaw" },
+                walk: { time: "10-15 min", cost: "Free" },
+                recommended: "Walk",
+                visit: "9:30 AM - 11:00 AM (1.5 hours)"
+            },
+            {
+                from: "Red Fort",
+                to: "India Gate",
+                distance: "8 km",
+                metro: { time: "30-40 min", cost: "₹20-30", details: "Lal Qila → Kashmere Gate → Central Secretariat (Yellow Line), then walk 15 min" },
+                taxi: { time: "20-30 min", cost: "₹150-200", details: "Direct via Ola/Uber - saves time!" },
+                recommended: "Taxi (saves time)",
+                visit: "11:45 AM - 1:00 PM (1.25 hours + lunch)"
+            },
+            {
+                from: "India Gate",
+                to: "Humayun's Tomb",
+                distance: "6 km",
+                metro: { time: "45-60 min", cost: "₹20-30", details: "Walk to Central Secretariat → Violet Line to JLN Stadium, then auto ₹50-80" },
+                taxi: { time: "15-20 min", cost: "₹100-150", details: "Direct via Ola/Uber - HIGHLY recommended" },
+                recommended: "Taxi (saves 30+ min)",
+                visit: "2:00 PM - 3:30 PM (1.5 hours)"
+            },
+            {
+                from: "Humayun's Tomb",
+                to: "Qutub Minar",
+                distance: "14 km",
+                metro: { time: "60-75 min", cost: "₹30-40", details: "JLN Stadium → Central Secretariat → Qutab Minar (Yellow Line)" },
+                taxi: { time: "35-45 min", cost: "₹250-350", details: "Direct via Ola/Uber" },
+                recommended: "Metro (cost-effective)",
+                visit: "4:30 PM - 6:30 PM (2 hours)"
+            },
+            {
+                from: "Qutub Minar",
+                to: "Waste to Wonder Park",
+                distance: "35 km",
+                metro: { time: "90-120 min", cost: "₹50-60", details: "Qutab Minar → Rajiv Chowk → Noida Sector 62 (Yellow+Blue Line)" },
+                taxi: { time: "60-75 min", cost: "₹500-700", details: "Very expensive, not recommended" },
+                recommended: "Skip for 1-day trip",
+                visit: "NOT POSSIBLE in 1-day trip",
+                warning: true
+            }
+        ];
+
+        let selectedRoute = null;
+
+        function createRouteCard(route, index) {
+            const card = document.createElement('div');
+            card.className = `route-card ${route.warning ? 'warning' : ''}`;
+            if (selectedRoute === index) card.classList.add('selected');
+            
+            card.innerHTML = `
+                <div class="route-header">
+                    <div class="route-info">
+                        <div>
+                            <span class="badge badge-step">Step ${index + 1}</span>
+                            ${route.warning ? '<span class="badge badge-warning"><i data-lucide="alert-circle" style="width: 14px; height: 14px;"></i> NOT FEASIBLE</span>' : ''}
+                        </div>
+                        <h3 class="route-title">${route.from} → ${route.to}</h3>
+                        <p class="route-distance">Distance: <strong>${route.distance}</strong></p>
+                        <p class="visit-time">Visit Time: ${route.visit}</p>
+                    </div>
+                    <div>
+                        <span class="badge badge-recommended">Best: ${route.recommended}</span>
+                    </div>
+                </div>
+                
+                <div class="travel-options">
+                    ${route.metro ? `
+                        <div class="travel-option ${route.recommended === 'Metro' ? 'recommended-metro' : ''}">
+                            <div class="option-header">
+                                <i data-lucide="train" style="width: 16px; height: 16px; color: #3b82f6;"></i>
+                                Metro
+                            </div>
+                            <div class="option-detail">
+                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                ${route.metro.time}
+                            </div>
+                            <div class="option-detail">
+                                <i data-lucide="indian-rupee" style="width: 12px; height: 12px;"></i>
+                                <strong style="color: #3b82f6;">${route.metro.cost}</strong>
+                            </div>
+                            ${selectedRoute === index ? `<p class="option-details-text">${route.metro.details}</p>` : ''}
+                        </div>
+                    ` : ''}
+                    
+                    ${route.taxi ? `
+                        <div class="travel-option ${route.recommended.includes('Taxi') ? 'recommended-taxi' : ''}">
+                            <div class="option-header">
+                                <i data-lucide="car" style="width: 16px; height: 16px; color: #22c55e;"></i>
+                                Taxi/Auto
+                            </div>
+                            <div class="option-detail">
+                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                ${route.taxi.time}
+                            </div>
+                            <div class="option-detail">
+                                <i data-lucide="indian-rupee" style="width: 12px; height: 12px;"></i>
+                                <strong style="color: #22c55e;">${route.taxi.cost}</strong>
+                            </div>
+                            ${selectedRoute === index ? `<p class="option-details-text">${route.taxi.details}</p>` : ''}
+                        </div>
+                    ` : ''}
+                    
+                    ${route.walk ? `
+                        <div class="travel-option ${route.recommended === 'Walk' ? 'recommended-walk' : ''}">
+                            <div class="option-header">
+                                <i data-lucide="map-pin" style="width: 16px; height: 16px; color: #a855f7;"></i>
+                                Walk
+                            </div>
+                            <div class="option-detail">
+                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                ${route.walk.time}
+                            </div>
+                            <div class="option-detail">
+                                <i data-lucide="indian-rupee" style="width: 12px; height: 12px;"></i>
+                                <strong style="color: #a855f7;">${route.walk.cost}</strong>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                ${route.warning ? `
+                    <div class="warning-box">
+                        <strong>⚠️ Warning:</strong> Waste to Wonder Park is 35 km away in Noida. Adding this will take 3-4 hours extra travel time, making a 1-day trip impossible. Consider visiting it on a separate day.
+                    </div>
+                ` : ''}
+            `;
+            
+            card.addEventListener('click', () => {
+                selectedRoute = selectedRoute === index ? null : index;
+                renderRoutes();
+            });
+            
+            return card;
+        }
+
+        function renderRoutes() {
+            const container = document.getElementById('routes-container');
+            container.innerHTML = '';
+            routes.forEach((route, index) => {
+                container.appendChild(createRouteCard(route, index));
+            });
+            lucide.createIcons();
+        }
+
+        // Initialize
+        renderRoutes();
+    </script>
+</body>
+</html>
